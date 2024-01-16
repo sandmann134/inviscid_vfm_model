@@ -1,0 +1,164 @@
+#comment test - background velocity file path:
+/Users/alexmann/Library/Mobile Documents/com~apple~CloudDocs/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/vel_prof_u.csv
+
+#amplitudes (x, y, z):
+0.05 0.0 0.0
+
+#wavelengths:
+0.004 1.0 1.0
+
+#phases:
+0.0 0.0 0.0
+
+#directions:
+0
+
+#circulation - circ 0.017 og - now for full KH, not fil
+0.4
+
+#core_radius max_range
+0.005 0.25
+
+#min_sl max_sl dz_i 
+0.0001 0.0003 0.0002
+
+#domain_width
+0.04
+
+#dt
+0.0001
+
+#number of timesteps
+1000
+
+#number of billows
+5
+
+#number of filaments
+5
+
+#filament type (0 for circle, 1 for line)
+1
+
+#timesteps per kh period - 46 w/dt = 0.0001
+46
+
+#initilize from file (1 for true, 0 for false)
+0
+
+#initialization file (if 1)
+/Users/alexmann/Library/Mobile Documents/com~apple~CloudDocs/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/7f_7i_nov10/7f_7i_timestep_44.vtu
+
+#1st-braid vortices circulation (0.0066-0.0068 based on chev sims)
+#2nd braid spacing 1 (spanwise w/in pair) - 0.00105
+#3rd braid spacing 2 (spanwise b/t pairs) - 0.00395
+0.0013 0.00105 0.008
+#FYI alignment w/chevs: (-vort,chev tip,+vort for hi-speed on bottom)
+
+#number of filaments per braid vortex:
+1
+
+#KH fil coordinates - can be on as many lines as desired but will keep 
+#going until it finds num_filaments x2 coords - (x, y) for each fil.
+0.0 0.0   0.002 0.0   0.004 0.0
+0.002 0.0015   0.002 -0.0015
+#0.001 0.001    0.003 0.001
+#0.001 -0.001   0.003 -0.001
+
+#braid vortices filament coordinates (relative to vortex center, with specified cordinates being [y,z])
+0.0 0.0
+
+0.001 0.0015    0.003 0.0015    0.005 0.0015    0.007 0.0015
+0.001 -0.0015    0.003 -0.0015    0.005 -0.0015    0.007 -0.0015
+
+0.003 0.003    0.005 0.003
+0.003 -0.003    0.005 -0.003
+
+
+#34:
+0.0 0.0005   0.002 0.0005   0.004 0.0005   0.006 0.0005   0.008 0.0005   0.01 0.0005
+0.0 -0.0005   0.002 -0.0005   0.004 -0.0005   0.006 -0.0005   0.008 -0.0005   0.01 -0.0005
+
+0.001 0.0015   0.003 0.0015   0.005 0.0015   0.007 0.0015   0.009 0.0015
+0.001 -0.0015   0.003 -0.0015   0.005 -0.0015   0.007 -0.0015   0.009 -0.0015
+
+0.002 0.0025   0.004 0.0025   0.006 0.0025   0.008 0.0025 
+0.002 -0.0025   0.004 -0.0025   0.006 -0.0025   0.008 -0.0025
+
+0.004 0.0035   0.006 0.0035
+0.004 -0.0035   0.006 -0.0035
+
+#68:
+0.0 0.0005     0.001 0.0005   0.002 0.0005   0.003 0.0005   0.004 0.0005   0.005 0.0005   0.006 0.0005   0.007 0.0005   0.008 0.0005   0.009 0.0005   0.01 0.0005
+0.0 -0.0005     0.001 -0.0005   0.002 -0.0005   0.003 -0.0005   0.004 -0.0005   0.005 -0.0005   0.006 -0.0005   0.007 -0.0005   0.008 -0.0005   0.009 -0.0005   0.01 -0.0005
+
+0.0005 0.0015     0.0015 0.0015   0.0025 0.0015   0.0035 0.0015   0.0045 0.0015   0.0055 0.0015   0.0065 0.0015   0.0075 0.0015   0.0085 0.0015   0.0095 0.0015
+0.0005 -0.0015     0.0015 -0.0015   0.0025 -0.0015   0.0035 -0.0015   0.0045 -0.0015   0.0055 -0.0015   0.0065 -0.0015   0.0075 -0.0015   0.0085 -0.0015   0.0095 -0.0015
+
+0.0015 0.0025   0.0025 0.0025   0.0035 0.0025   0.0045 0.0025   0.0055 0.0025   0.0065 0.0025   0.0075 0.0025   0.0085 0.0025 
+0.0015 -0.0025   0.0025 -0.0025   0.0035 -0.0025   0.0045 -0.0025   0.0055 -0.0025   0.0065 -0.0025   0.0075 -0.0025   0.0085 -0.0025
+
+0.003 0.0035   0.004 0.0035   0.005 0.0035   0.006 0.0035   0.007 0.0035
+0.003 -0.0035   0.004 -0.0035   0.005 -0.0035   0.006 -0.0035   0.007 -0.0035
+
+
+0.002 0.0
+
+0.004 0.0
+
+0.002 0.002
+
+0.002 -0.002
+
+#PART OF 15:
+0.001 0.0
+
+0.0015 0.0005
+
+0.0025 0.0005
+
+0.0005 -0.0005
+
+0.0015 -0.0005
+
+0.0025 -0.0005
+
+0.001 0.001
+
+0.002 0.001
+
+0.001 -0.001
+
+0.002 -0.001
+
+0.0015 0.0015
+
+0.0015 -0.0015
+
+
+
+#CIRCULAR COORDS
+0.003414213562 0.001414213562
+
+0.000585786438 0.001414213562
+
+0.000585786438 -0.001414213562
+
+0.003414213562 -0.001414213562
+
+
+# background velocity file path
+# amplitudes of the sine waves in the background velocity [m/s]
+# wavelengths of the sine waves in the background velocity [m]
+# phases of the sine waves in the background velocity
+# directions of the sine waves in the background velocity (0 -> x)
+# circulation of the filament
+# core_radius - radius of the volume within which the filament cannot induce itself [m]
+# min_sl, max_sl, dz_i - max/min length of the filament before splitting, and initial spacing [m]
+# max_range - maximum range of influence of the filament [m]
+# dz_i - initial node spacing [m]
+# dt - timestep size [s]
+# number of timesteps
+# number of filaments
+# type of filaments - 1 for circular, 0 for lines
+# initial filament endpoints of the filament nodes (currently written only for orientation in the z dir) [m]
