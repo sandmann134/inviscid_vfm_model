@@ -122,5 +122,6 @@ void move_nodes_via_induction(std::vector<std::unique_ptr<Filament>>& filaments,
 void step(std::vector<std::unique_ptr<Filament>>& filaments, double dt);
 std::string save_multiple_fil_timestep(std::string fn_template, const std::vector<std::unique_ptr<Filament>>& filaments);
 void read_vtk(std::string fn, std::vector<std::unique_ptr<Filament>>& filaments, double circulation, double core_radius, double max_sl, double min_sl, double max_range, SineBackgroundGenerator background_vel);
+void output_velocity_field(std::string fn_template, std::vector<std::unique_ptr<Filament>>& filaments, SineBackgroundGenerator background_vel, double min_x, double max_x, double min_y, double max_y, double min_z, double max_z, int i, int j, int k);
 
 #endif // FILAMENT_H

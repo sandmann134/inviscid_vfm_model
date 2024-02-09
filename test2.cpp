@@ -1,5 +1,4 @@
 #include <cmath>
-//#include <vtkNumpyToVTK.h>    //should be able to avoid numPy stuff given all in c++
 #include <vtkUnstructuredGrid.h>
 #include <vtkFieldData.h>
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -30,13 +29,49 @@
 
 int main() {
 
-  std::ifstream configFile("config.txt");
-  if (!configFile) {
-    std::cerr << "Error opening config file" << std::endl;
-    return 1;
+  //ask user if they would like to 1) start a new run or 2) evaluate a velocity field for an old result:
+  std::cout << "Would you like to 1) start a new run or 2) evaluate a velocity field for an old result?\n(Enter 1 or 2): ";
+  int choice;
+  std::cin >> choice;
+  while (choice != 1 && choice != 2) {
+    std::cout << "Invalid choice, please enter 1 or 2: ";
+    std::cin >> choice;
   }
-  std::cout << "Config opened...\n";
 
+  std::ifstream configFile;   //define here so can be used in both cases
+  std::string full_res_path;  //define here so can be used globablly 
+
+  if(choice == 2){    //evaluate velocity field for old result ONLY
+    //folder and name for results to evaluate (if not same folder):
+    std::string res_folder = "RESULTS/5f_5kh_1b_jan/";
+    full_res_path = res_folder + "5f_5kh_1b_timestep_40.vtu";
+    std::string full_config_path = res_folder + "config.txt";
+    //check if res_folder variable has been defined:
+    if (res_folder.empty()) {
+      configFile.open("config.txt");
+      std::cout << "res_folder variable not defined, config in current directory opened..." << std::endl;
+    }else{
+      std::cout << "Config path: " << full_config_path << "\n";
+      configFile.open(full_config_path);
+      if (!configFile) {
+        std::cerr << "Error opening config file(2)" << std::endl;
+        return 1;
+      }
+      std::cout << "Config " << res_folder << "config.txt opened...\n";
+    }
+
+    std::cout << "Evaluating velocity field for result: " + full_res_path + "\n";
+  }else{
+    std::cout << "Starting new run...\n";
+    configFile.open("config.txt");
+    if (!configFile) {
+      std::cerr << "Error opening config file(4)" << std::endl;
+      return 1;
+    }
+    std::cout << "Config opened...\n";
+  }
+
+  //read config file in either case:
   std::string bg_vel_file; //= "/Users/alexmann/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/vel_prof.txt" ;
   std::vector<double> amplitudes(3,0.0);  //= {0.02, 0.0, 0.0};
   std::vector<double> wavelengths(3,0.0);  //= {0.004, 1.0, 1.0};
@@ -52,10 +87,11 @@ int main() {
   std::string line;
   int line_count = 1;
   while(std::getline(configFile, line) && line_count < 20){
+    
     if (line.empty() || line[0] == '#'){
       continue;
     }
-
+    
     std::stringstream lineStream(line);
 
     switch(line_count){
@@ -131,7 +167,6 @@ int main() {
   int k=0;
   while(std::getline(configFile, line) && k<(num_filaments+num_braid_fils)){
     if (line.empty() || line[0] == '#'){
-      //std::cout << line <<"\n";
       continue;
     }
 
@@ -149,13 +184,13 @@ int main() {
       k++;
     }
   }
-
+/*
   std::cout << "Fil coords:\n";
   for(int i=0; i<num_filaments; i++){
     std::cout << fil_initial_coords[i][0] << " " << fil_initial_coords[i][1] <<"\n";
   }
-  
-  std::cout << "Config file read OK...\n";
+*/
+  std::cout << "Config file read finished...\n";
 
   configFile.close();
 
@@ -163,7 +198,6 @@ int main() {
     amplitudes, wavelengths, phases, directions) ;
 
   //int num_gen = std::round(num_timesteps/25);
-
   //make sure initial increment is as close to dz_i as possible while still perfectly fitting domain width:
   int num_nodes_k = std::round(domain_width/dz_i);
   dz_i = domain_width/num_nodes_k;
@@ -172,24 +206,23 @@ int main() {
   std::vector<std::vector<std::vector<double>>> fil_node_coords(num_filaments + num_braid_fils);   //if fix end points, calc number of elements, can initialize better.
   //taking two endpoints and initializing filament(s) with evenly spaced nodes 
   //...(get_fil_coords only written for z-oriented filaments, get_fil_coords2 more generalized):
-  for(int l=0; l<num_filaments; l++){
+  if(choice==1){      //only need to do this if starting a new run
+    for(int l=0; l<num_filaments; l++){
+      std::cout << "filament " << l << "...\n";
 
-    std::cout << "filament " << l << "...\n";
+      std::vector<std::vector<double>> temp_coords = get_fil_coords(fil_type, fil_initial_coords[l][0], fil_initial_coords[l][1], domain_width, dz_i);
+      fil_node_coords[l] = temp_coords;
 
-    std::vector<std::vector<double>> temp_coords = get_fil_coords(fil_type, fil_initial_coords[l][0], fil_initial_coords[l][1], domain_width, dz_i);
-    fil_node_coords[l] = temp_coords;
+    }
 
+    for(int l=num_filaments; l<(num_filaments+num_braid_fils); l++){
+      std::cout << "braid filament " << l << "...\n";
+
+      std::vector<std::vector<double>> temp_coords = get_fil_coords2(fil_type, fil_initial_coords[0][0]+0.002, fil_initial_coords[0][1]+0.01+fil_initial_coords[l][0], fil_initial_coords[l][1], fil_initial_coords[0][0]+0.033, fil_initial_coords[0][1]-0.01+fil_initial_coords[l][0], fil_initial_coords[l][1], dz_i);
+      fil_node_coords[l] = temp_coords;
+    }
   }
-
-  for(int l=num_filaments; l<(num_filaments+num_braid_fils); l++){
-
-    std::cout << "braid filament " << l << "...\n";
-
-    std::vector<std::vector<double>> temp_coords = get_fil_coords2(fil_type, fil_initial_coords[0][0]+0.002, fil_initial_coords[0][1]+0.01+fil_initial_coords[l][0], fil_initial_coords[l][1], fil_initial_coords[0][0]+0.033, fil_initial_coords[0][1]-0.01+fil_initial_coords[l][0], fil_initial_coords[l][1], dz_i);
-    fil_node_coords[l] = temp_coords;
-
-  }
-
+  
   int timestep_start = 0;
   //int num_billows = 7; //number of billows to initialize and have in domain at all times - should alter to make generically compatible with initialization from file
   int num_braid_pairs = std::trunc(domain_width/braid_spacing2);  //number of braid pairs within domain, dictated by domain width and pairing spacing
@@ -205,10 +238,19 @@ int main() {
 
   //create vector of Filaments for storage once created
   std::vector<std::unique_ptr<Filament>> filaments;
+  std::cout << "num_billows: " << num_billows << "\nnum_filaments: " << num_filaments << "\nnum_braid_pairs: " << num_braid_pairs << "\nnum_braid_fils: " << num_braid_fils << "\n= " << num_billows*num_filaments + num_braid_pairs*2*num_braid_fils*num_billows << " filaments.\n";
   filaments.reserve(num_billows*num_filaments + num_braid_pairs*2*num_braid_fils*num_billows);   //2 vortices per braid pair, num_braid_fil filaments per vortex
 
   std::ofstream log_file;
   log_file.open("log_file.txt", std::ios_base::app);
+
+  if(choice==2){
+    std::cout << "Reading velocity field from file...(" + full_res_path + ")\n";
+    read_vtk(full_res_path, filaments, fil_circulation, core_radius, max_sl, min_sl, max_range, background_vel);
+    std::cout << "Back from read_vtk...\n";
+    output_velocity_field("test_vel_field_40.vtu", filaments, background_vel, 0.0, 0.1, -0.02, 0.02, 0.01, 0.03, 40, 30, 40);
+    return 0;
+  }
 
   if(initialize_fr_file){
     //if initialize from file, initialize filaments vector from previous data (STILL NEED TO GET TIMESTEP)
@@ -264,7 +306,6 @@ int main() {
           }
         }
       }
-
 
       //KH FILAMENTS:
 
@@ -361,7 +402,7 @@ int main() {
   //timestep_start (if initialize from file, 0 otherwise)
   for (int j = timestep_start; j < num_timesteps; j++) {
     //convert num_billows & num_filaments to string for filename:
-    std::string fn_template = std::to_string(num_filaments) + "f_" + std::to_string(num_billows) + "kh_" + std::to_string(num_braid_fils) + "b_timestep_" + std::to_string(j);
+    std::string fn_template = std::to_string(num_filaments) + "f_" + std::to_string(num_billows) + "kh_" + std::to_string(num_braid_fils) + "b_lesscirc_timestep_" + std::to_string(j);
     
     if(j != 0 && j%KH_num_steps == 0){
       int fil_start_i = last_billow_i*(num_filaments+num_braid_fils*num_braid_pairs*2);
@@ -435,12 +476,18 @@ int main() {
     }
     
     //output every fourth timestep, step each one
-    if(j%2 == 0){
+    if(j%5 == 0){
       save_multiple_fil_timestep(fn_template, filaments);
     }
+
+    //if(j%10 ==0){
+    //  output_velocity_field(fn_template, filaments, background_vel, 0.0, 0.15, -0.02, 0.02, 0.01, 0.03, 120, 60, 40);
+    //}
+
     step(filaments, dt);
+
   }
   
-
   return 0;
+  
 }

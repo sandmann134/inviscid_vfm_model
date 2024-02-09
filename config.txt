@@ -13,8 +13,8 @@
 #directions:
 0
 
-#circulation - circ 0.017 og - now for full KH, not fil
-0.4
+#circulation - circ 0.017 og - now for full KH, not fil - viscid CFD ~0.34
+0.2
 
 #core_radius max_range
 0.005 0.25
@@ -29,10 +29,10 @@
 0.0001
 
 #number of timesteps
-1000
+500
 
 #number of billows
-5
+7
 
 #number of filaments
 5
@@ -43,11 +43,11 @@
 #timesteps per kh period - 46 w/dt = 0.0001
 46
 
-#initilize from file (1 for true, 0 for false)
-0
+#initialize from file (1 for true, 0 for false)
+1
 
 #initialization file (if 1)
-/Users/alexmann/Library/Mobile Documents/com~apple~CloudDocs/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/7f_7i_nov10/7f_7i_timestep_44.vtu
+/Users/alexmann/Library/Mobile Documents/com~apple~CloudDocs/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/5f_7kh_1b_lesscirc/5f_7kh_1b_lesscirc_timestep_100.vtu
 
 #1st-braid vortices circulation (0.0066-0.0068 based on chev sims)
 #2nd braid spacing 1 (spanwise w/in pair) - 0.00105

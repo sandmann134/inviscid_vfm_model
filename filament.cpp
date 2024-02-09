@@ -1,7 +1,9 @@
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkFieldData.h>
 #include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkXMLStructuredGridWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
@@ -63,7 +65,7 @@ std::pair<std::vector<double>, std::vector<double> > load_from_file(const std::s
 }
 
 //new function get_fil_coords2 which is more generalized and takes start and end points as input:
- std::vector<std::vector<double>> get_fil_coords2(bool fil_type, double x1, double y1, double z1, double x2, double y2, double z2, double dz_i) {
+std::vector<std::vector<double>> get_fil_coords2(bool fil_type, double x1, double y1, double z1, double x2, double y2, double z2, double dz_i) {
   std::vector<std::vector<double>> coords;
   
   if(fil_type){
@@ -478,6 +480,7 @@ std::string save_multiple_fil_timestep(std::string fn_template, const std::vecto
 }
 */
 
+
 //updated version for unique_ptr
 std::string save_multiple_fil_timestep(std::string fn_template, const std::vector<std::unique_ptr<Filament>>& filaments) {
     //int timestep_id = filaments[0]->get_timestep();
@@ -597,6 +600,96 @@ std::string save_multiple_fil_timestep(std::string fn_template, const std::vecto
 
     return fn;
 }
+
+//output_velocity_field function which takes in a vector of filaments & the min & max x y z values (vector of 
+//number of nodes in each direction i j k) for a 3d grid and outputs a vtk file with a velocity field based 
+//on the induced & background velocity at the grid nodes:
+void output_velocity_field(std::string fn_template, std::vector<std::unique_ptr<Filament>>& filaments, SineBackgroundGenerator background_vel, double min_x, double max_x, double min_y, double max_y, double min_z, double max_z, int i, int j, int k) {
+    //int timestep_id = filaments[0]->get_timestep();
+    std::cout << "Saving velocity field...\n";
+
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    //vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkStructuredGrid> sGrid = vtkSmartPointer<vtkStructuredGrid>::New();
+
+    std::vector<double> point_velocities;
+    std::vector<double> point_induced_velocities;
+
+    //calculate grid spacing in each direction:
+    double dx = (max_x-min_x)/(i-1);
+    double dy = (max_y-min_y)/(j-1);
+    double dz = (max_z-min_z)/(k-1);
+
+    //loop through grid points and calculate induced & background velocity at each:
+    for(int k_count=0; k_count<k; k_count++){
+      for(int j_count=0; j_count<j; j_count++){
+        for(int i_count=0; i_count<i; i_count++){
+          //calculate coordinates of current grid point:
+          double x = min_x + i_count*dx;
+          double y = min_y + j_count*dy;
+          double z = min_z + k_count*dz;
+
+          //calculate background velocity at current grid point:
+            double vx_bg, vy_bg, vz_bg;
+            std::tie(vx_bg, vy_bg, vz_bg) = background_vel.evaluate(x, y, z, 0);
+
+            //calculate induced velocity at current grid point:
+            double ivx, ivy, ivz;
+            Node* current_node = new_node(x, y, z, 0, nullptr, nullptr); // Create a named variable for the current node
+            calculate_induced_velocity(*current_node, filaments, ivx, ivy, ivz, 0);
+
+            //add background & induced velocities to get total velocity at current grid point:
+            double vx = vx_bg + ivx;
+            double vy = vy_bg + ivy;
+            double vz = vz_bg + ivz;
+
+            //add current grid point to points vector:
+            points->InsertNextPoint(x, y, z);
+
+          //add
+          point_velocities.push_back(vx);
+          point_velocities.push_back(vy);
+          point_velocities.push_back(vz);
+
+          point_induced_velocities.push_back(ivx);
+          point_induced_velocities.push_back(ivy);
+          point_induced_velocities.push_back(ivz);
+        }
+      }
+    }
+
+    //add to structured grid:
+    sGrid->SetDimensions(i, j, k);
+    sGrid->SetPoints(points);
+
+    vtkSmartPointer<vtkDoubleArray> velocity_array = vtkSmartPointer<vtkDoubleArray>::New();
+    velocity_array->SetNumberOfComponents(3);
+    velocity_array->SetNumberOfTuples(point_velocities.size() / 3);
+    velocity_array->SetName("Velocity");
+    velocity_array->SetArray(point_velocities.data(), point_velocities.size(), 1);
+
+    vtkSmartPointer<vtkDoubleArray> induced_velocity_array = vtkSmartPointer<vtkDoubleArray>::New();
+    induced_velocity_array->SetNumberOfComponents(3);
+    induced_velocity_array->SetNumberOfTuples(point_induced_velocities.size() / 3);
+    induced_velocity_array->SetName("InducedVelocity");
+    induced_velocity_array->SetArray(point_induced_velocities.data(), point_induced_velocities.size(), 1);
+
+    sGrid->GetPointData()->AddArray(velocity_array);
+    sGrid->GetPointData()->AddArray(induced_velocity_array);
+
+    std::stringstream ss;
+    ss << "velfield_" << fn_template << ".vtu";
+
+    std::string fn = ss.str();
+
+    vtkSmartPointer<vtkXMLStructuredGridWriter> writer = vtkSmartPointer<vtkXMLStructuredGridWriter>::New();
+    writer->SetFileName(fn.c_str());
+    writer->SetInputData(sGrid);
+    writer->Write();
+
+    std::cout << "Saved to file " << fn << std::endl;
+}
+
 
 //Function to read vtk output from above and intialize filaments vector for simulation restarts:
 
@@ -756,6 +849,7 @@ void read_vtk(std::string fn, std::vector<std::unique_ptr<Filament>>& filaments,
 
         auto temp_f = std::make_unique<Filament>(circulation, core_radius, max_sl, min_sl, max_range, node_coords, background_vel);
         filaments.push_back(std::move(temp_f));
+        std::cout << "Done adding to filaments.\n";
         //ideally lookup/savetimestep:
     }
 }
