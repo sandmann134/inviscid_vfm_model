@@ -1,4 +1,4 @@
-#comment test - background velocity file path:
+#background velocity file path:
 /Users/alexmann/Library/Mobile Documents/com~apple~CloudDocs/Documents/School/Carleton/Masters/program_working_dir/inviscid_model/vel_prof_u.csv
 
 #amplitudes (x, y, z):
